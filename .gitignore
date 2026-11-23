@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+token.json
+.DS_Store
+Thumbs.db
+.n8n/

@@ -1,0 +1,615 @@
+{
+  "name": "DOMOTICA-LOGISTICS-AUTOMATION - Simulador de pedidos aleatorios",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "55d35caf-59fa-4da4-9ef7-eac85f955b15",
+      "name": "Iniciar simulación",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const productos = [\n  \"Sensor de movimiento\",\n  \"Cámara IP\",\n  \"Termostato inteligente\",\n  \"Detector de humo\"\n];\n\nconst clientes = [\n  { nombre: \"Juan García\", direccion: \"Calle Mayor 15, Burgos\" },\n  { nombre: \"Laura Martín\", direccion: \"Avenida del Cid 22, Burgos\" },\n  { nombre: \"Carlos Ruiz\", direccion: \"Calle Vitoria 8, Burgos\" },\n  { nombre: \"Marta López\", direccion: \"Plaza Mayor 3, Burgos\" }\n];\n\nconst comerciales = [\"Ana López\", \"Pedro Sánchez\", \"Lucía Fernández\"];\nconst producto = productos[Math.floor(Math.random() * productos.length)];\nconst cliente = clientes[Math.floor(Math.random() * clientes.length)];\nconst cantidad = Math.floor(Math.random() * 8) + 1;\nconst ahora = new Date();\n\nreturn [{\n  json: {\n    numero_pedido: `PED-${ahora.getTime()}`,\n    fecha: ahora.toISOString(),\n    comercial: comerciales[Math.floor(Math.random() * comerciales.length)],\n    cliente: cliente.nombre,\n    direccion: cliente.direccion,\n    producto,\n    cantidad,\n    estado_pedido: \"Nuevo\",\n    mensaje: \"Pedido generado automáticamente para simulación\"\n  }\n}];"
+      },
+      "id": "5677363c-3307-4dcb-8d9a-ad3b2811960c",
+      "name": "Generar pedido aleatorio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "SELECCIONAR_DOCUMENTO_PEDIDOS",
+          "mode": "list",
+          "cachedResultName": "Pedidos domótica"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SELECCIONAR_HOJA_PEDIDOS",
+          "mode": "list",
+          "cachedResultName": "Hoja 1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "numero_pedido": "={{ $json.numero_pedido }}",
+            "fecha": "={{ $json.fecha }}",
+            "comercial": "={{ $json.comercial }}",
+            "cliente": "={{ $json.cliente }}",
+            "direccion": "={{ $json.direccion }}",
+            "producto": "={{ $json.producto }}",
+            "cantidad": "={{ $json.cantidad }}",
+            "estado_pedido": "={{ $json.estado_pedido }}",
+            "mensaje": "={{ $json.mensaje }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "numero_pedido",
+              "displayName": "numero_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "comercial",
+              "displayName": "comercial",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "direccion",
+              "displayName": "direccion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "producto",
+              "displayName": "producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "cantidad",
+              "displayName": "cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "estado_pedido",
+              "displayName": "estado_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7da1c2e6-adf9-4aae-9ffd-52850bb1a8b9",
+      "name": "Registrar pedido en Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "SELECCIONAR_DOCUMENTO_INVENTARIO",
+          "mode": "list",
+          "cachedResultName": "INVENTARIO_DOMOTICA"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SELECCIONAR_HOJA_INVENTARIO",
+          "mode": "list",
+          "cachedResultName": "Hoja 1"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "producto",
+              "lookupValue": "={{ $('Generar pedido aleatorio').item.json.producto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d89b01d3-5a4b-4cf8-8413-86bb3881fd3d",
+      "name": "Consultar inventario",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        960,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9c2ab9bd-ec6b-4cca-9b95-10f676598705",
+              "leftValue": "={{ Number($json.stock_disponible) }}",
+              "rightValue": "={{ Number($('Generar pedido aleatorio').item.json.cantidad) }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e607eb25-20ae-4892-b86f-54bbe9603aaf",
+      "name": "¿Hay stock suficiente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "SELECCIONAR_DOCUMENTO_INVENTARIO",
+          "mode": "list",
+          "cachedResultName": "INVENTARIO_DOMOTICA"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SELECCIONAR_HOJA_INVENTARIO",
+          "mode": "list",
+          "cachedResultName": "Hoja 1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "producto": "={{ $json.producto }}",
+            "stock_disponible": "={{ Number($json.stock_disponible) - Number($('Generar pedido aleatorio').item.json.cantidad) }}"
+          },
+          "matchingColumns": [
+            "producto"
+          ],
+          "schema": [
+            {
+              "id": "producto",
+              "displayName": "producto",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stock_disponible",
+              "displayName": "stock_disponible",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "referencia",
+              "displayName": "referencia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "3c0b94ab-8fee-4528-9c28-4a86d2e1980b",
+      "name": "Descontar stock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1450,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "SELECCIONAR_DOCUMENTO_PEDIDOS",
+          "mode": "list",
+          "cachedResultName": "Pedidos domótica"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SELECCIONAR_HOJA_PEDIDOS",
+          "mode": "list",
+          "cachedResultName": "Hoja 1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "numero_pedido": "={{ $('Generar pedido aleatorio').item.json.numero_pedido }}",
+            "estado_pedido": "Aceptado",
+            "mensaje": "Pedido aceptado. Stock actualizado."
+          },
+          "matchingColumns": [
+            "numero_pedido"
+          ],
+          "schema": [
+            {
+              "id": "numero_pedido",
+              "displayName": "numero_pedido",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "comercial",
+              "displayName": "comercial",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "direccion",
+              "displayName": "direccion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "producto",
+              "displayName": "producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "cantidad",
+              "displayName": "cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "estado_pedido",
+              "displayName": "estado_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "8d2fe21e-fd7d-407e-920a-ef43499448f3",
+      "name": "Marcar pedido aceptado",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1700,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "SELECCIONAR_DOCUMENTO_PEDIDOS",
+          "mode": "list",
+          "cachedResultName": "Pedidos domótica"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SELECCIONAR_HOJA_PEDIDOS",
+          "mode": "list",
+          "cachedResultName": "Hoja 1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "numero_pedido": "={{ $('Generar pedido aleatorio').item.json.numero_pedido }}",
+            "estado_pedido": "Pendiente",
+            "mensaje": "Stock insuficiente. El inventario no se ha modificado."
+          },
+          "matchingColumns": [
+            "numero_pedido"
+          ],
+          "schema": [
+            {
+              "id": "numero_pedido",
+              "displayName": "numero_pedido",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "comercial",
+              "displayName": "comercial",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "direccion",
+              "displayName": "direccion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "producto",
+              "displayName": "producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "cantidad",
+              "displayName": "cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "estado_pedido",
+              "displayName": "estado_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "bf6af678-d03a-44f7-9458-ec71581ccd09",
+      "name": "Marcar pedido pendiente",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1450,
+        440
+      ]
+    }
+  ],
+  "connections": {
+    "Iniciar simulación": {
+      "main": [
+        [
+          {
+            "node": "Generar pedido aleatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar pedido aleatorio": {
+      "main": [
+        [
+          {
+            "node": "Registrar pedido en Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar pedido en Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Consultar inventario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar inventario": {
+      "main": [
+        [
+          {
+            "node": "¿Hay stock suficiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay stock suficiente?": {
+      "main": [
+        [
+          {
+            "node": "Descontar stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar pedido pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descontar stock": {
+      "main": [
+        [
+          {
+            "node": "Marcar pedido aceptado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
